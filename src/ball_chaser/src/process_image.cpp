@@ -14,6 +14,8 @@ void drive_robot(float lin_x, float ang_z)
     ball_chaser::DriveToTarget srv;
     srv.request.linear_x= lin_x;
     srv.request.angular_z= ang_z;
+
+    client.call(srv);
 }
 
 // This callback function continuously executes and reads the image data
@@ -35,15 +37,18 @@ void process_image_callback(const sensor_msgs::Image img)
         }
     }
     
-    lin_x = 0.5;
-    ang_z = 1.5707*flag/(img.height * img.step); // angular velocity callibration
+    lin_x = 0.1;
+    ang_z = -1.5707*flag/(img.height * img.step); // angular velocity callibration
     
+    ROS_INFO("flag number:%1.2f", (float)flag);    
+
+
     if (flag == 0){
            drive_robot(0, 0); // If the ball is locate at center or no seen
     }  
 
-    if (flag =! 0){
-            drive_robot(lin_x, ang_z);  // Go to the direction for the ball
+    else{
+           drive_robot(lin_x, ang_z);  // Go to the direction for the ball
     }
     // TODO: Loop through each pixel in the image and check if there's a bright white one
     // Then, identify if this pixel falls in the left, mid, or right side of the image
