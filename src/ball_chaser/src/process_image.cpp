@@ -25,26 +25,34 @@ void process_image_callback(const sensor_msgs::Image img)
     int white_pixel = 255;
     float ang_z = 0;
     float lin_x = 0;
-    float flag = 0;
+    float left_flag = 0;
+    float right_flag =0;
+    float center_flag = 0;
+    float total_flag=0;
     
     for (int i = 0; i < img.height * img.step; i++) {
-        if (i%img.width < img.width%3 && img.data[i] == white_pixel) {
-            flag = flag +1; // left flag
+        if (i%img.width < img.width/3 && img.data[i] == white_pixel) {
+            left_flag = left_flag +1; // left flag
         }
        
-        if (i%img.width >= (2*img.width)%3 && img.data[i] == white_pixel)  {
-            flag = flag -1; // right flag
+        else if (i%img.width >= (2*img.width)/3 && img.data[i] == white_pixel)  {
+            right_flag = right_flag -1; // right flag
+        }
+     
+        else if (img.width/3 <= i%img.width && i%img.width < (2*img.width)/3 && img.data[i] == white_pixel) {
+            center_flag = center_flag +1;
         }
     }
     
     lin_x = 0.1;
-    ang_z = -1.5707*flag/(img.height * img.step); // angular velocity callibration
-    
-    ROS_INFO("flag number:%1.2f", (float)flag);    
+    ang_z = 1.5707*(left_flag-right_flag)/(img.height * img.step); // angular velocity callibration
+    total_flag = left_flag+right_flag+center_flag;
+
+    ROS_INFO("total flag number:%1.2f", (float)total_flag);    
 
 
-    if (flag == 0){
-           drive_robot(0, 0); // If the ball is locate at center or no seen
+    if (total_flag > 30000){
+           drive_robot(0, 0); 
     }  
 
     else{
